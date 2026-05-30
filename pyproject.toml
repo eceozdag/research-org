@@ -1,0 +1,19 @@
+[project]
+name = "research-org"
+version = "0.1.0"
+description = "Multi-agent research organization: memo → scientific white paper"
+requires-python = ">=3.11"
+dependencies = [
+    "anthropic>=0.55.0",
+    "pydantic>=2.0.0",
+    "watchdog>=4.0.0",
+    "python-dotenv>=1.0.0",
+    "rich>=13.0.0",
+]
+
+[project.scripts]
+research-org = "main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

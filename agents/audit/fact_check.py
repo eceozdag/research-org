@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-import anthropic
+import openai
 
 from agents.base import BaseAgent
 from state.research_state import AuditFinding, ResearchState
@@ -43,10 +43,10 @@ Return ONLY a valid JSON object:
 
 class FactCheckAudit(BaseAgent):
     name = "FactCheckAudit"
-    model = "claude-opus-4-7"
+    model = "gpt-4o"
     use_thinking = True
 
-    def execute(self, state: ResearchState, client: anthropic.Anthropic) -> ResearchState:
+    def execute(self, state: ResearchState, client: openai.OpenAI) -> ResearchState:
         topic_summary = [
             {"topic_id": t.topic_id, "title": t.title, "content_excerpt": t.content[:500]}
             for t in state.topic_outputs

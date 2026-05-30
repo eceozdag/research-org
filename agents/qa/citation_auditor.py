@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import anthropic
+import openai
 
 from agents.base import BaseAgent
 from state.research_state import AuditFinding, ResearchState
@@ -34,10 +34,10 @@ Return ONLY a valid JSON object:
 
 class CitationAuditor(BaseAgent):
     name = "CitationAuditor"
-    model = "claude-sonnet-4-6"
+    model = "gpt-4o-mini"
     use_thinking = False
 
-    def execute(self, state: ResearchState, client: anthropic.Anthropic) -> ResearchState:
+    def execute(self, state: ResearchState, client: openai.OpenAI) -> ResearchState:
         all_content = "\n\n".join(
             f"[{s.section_id}] {s.title}:\n{s.content[:1000]}" for s in state.sections if s.content
         )

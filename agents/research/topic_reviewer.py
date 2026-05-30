@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-import anthropic
+import openai
 
 from agents.base import BaseAgent
 from state.research_state import ResearchState
@@ -31,20 +31,20 @@ Return ONLY a valid JSON object:
 
 class TopicReviewer(BaseAgent):
     name = "TopicReviewer"
-    model = "claude-opus-4-7"
+    model = "gpt-4o"
     use_thinking = True
 
     def __init__(self, topic_id: str):
         self.topic_id = topic_id
 
-    def execute(self, state: ResearchState, client: anthropic.Anthropic) -> ResearchState:
+    def execute(self, state: ResearchState, client: openai.OpenAI) -> ResearchState:
         result = self.check(state, client)
         output = state.get_topic(self.topic_id)
         if output:
             output.viability_record = result
         return state
 
-    def check(self, state: ResearchState, client: anthropic.Anthropic) -> dict:
+    def check(self, state: ResearchState, client: openai.OpenAI) -> dict:
         output = state.get_topic(self.topic_id)
         if not output:
             return {"passed": False, "overall_notes": "No output found for this topic"}

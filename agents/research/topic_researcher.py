@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-import anthropic
+import openai
 
 from agents.base import BaseAgent
 from state.research_state import ResearchState, TopicNote, TopicOutput
@@ -58,14 +58,14 @@ Return ONLY a valid JSON object:
 
 class TopicResearcher(BaseAgent):
     name = "TopicResearcher"
-    model = "claude-opus-4-7"
+    model = "gpt-4o"
     use_thinking = True
 
     def __init__(self, topic_id: str, topic: dict):
         self.topic_id = topic_id
         self.topic = topic
 
-    def execute(self, state: ResearchState, client: anthropic.Anthropic) -> ResearchState:
+    def execute(self, state: ResearchState, client: openai.OpenAI) -> ResearchState:
         outline_context = json.dumps(state.refined_outline, indent=2)
         existing_output = state.get_topic(self.topic_id)
         revision_notes = ""

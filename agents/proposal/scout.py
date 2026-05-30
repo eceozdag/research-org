@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import anthropic
+import openai
 
 from agents.base import BaseAgent
 from state.research_state import ResearchState
@@ -38,10 +38,10 @@ Base your scan on your training knowledge. Flag anything that requires real-time
 
 class ScoutAgent(BaseAgent):
     name = "ScoutAgent"
-    model = "claude-opus-4-7"
+    model = "gpt-4o"
     use_thinking = True
 
-    def execute(self, state: ResearchState, client: anthropic.Anthropic) -> ResearchState:
+    def execute(self, state: ResearchState, client: openai.OpenAI) -> ResearchState:
         proposal_context = (
             f"Proposal review scores — Clarity: {state.proposal_review.get('clarity_score', 'N/A')}, "
             f"Feasibility: {state.proposal_review.get('feasibility_score', 'N/A')}\n"

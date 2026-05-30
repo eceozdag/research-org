@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import anthropic
+import openai
 
 from agents.base import BaseAgent
 from state.research_state import ResearchState
@@ -24,14 +24,14 @@ Return ONLY a valid JSON object:
 
 class DomainExpert(BaseAgent):
     name = "DomainExpert"
-    model = "claude-sonnet-4-6"
+    model = "gpt-4o-mini"
     use_thinking = False
 
     def __init__(self, domain: str, topic_id: str):
         self.domain = domain
         self.topic_id = topic_id
 
-    def execute(self, state: ResearchState, client: anthropic.Anthropic) -> ResearchState:
+    def execute(self, state: ResearchState, client: openai.OpenAI) -> ResearchState:
         response = self._call_claude(
             client=client,
             system=_SYSTEM,

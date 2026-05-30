@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-import anthropic
+import openai
 
 from agents.base import BaseAgent
 from state.research_state import ResearchState, Section
@@ -38,10 +38,10 @@ Return ONLY a valid JSON object:
 
 class StructureEditorial(BaseAgent):
     name = "StructureEditorial"
-    model = "claude-opus-4-7"
+    model = "gpt-4o"
     use_thinking = True
 
-    def execute(self, state: ResearchState, client: anthropic.Anthropic) -> ResearchState:
+    def execute(self, state: ResearchState, client: openai.OpenAI) -> ResearchState:
         topic_titles = [{"id": t.topic_id, "title": t.title} for t in state.topic_outputs if t.status == "viable"]
         response = self._call_claude(
             client=client,

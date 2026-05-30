@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import anthropic
+import openai
 
 from agents.base import BaseAgent
 from state.research_state import ResearchState
@@ -29,10 +29,10 @@ Flags: Scope creep, contradictory goals, legally sensitive claims, unverifiable 
 
 class ProposalReviewer(BaseAgent):
     name = "ProposalReviewer"
-    model = "claude-opus-4-7"
+    model = "gpt-4o"
     use_thinking = True
 
-    def execute(self, state: ResearchState, client: anthropic.Anthropic) -> ResearchState:
+    def execute(self, state: ResearchState, client: openai.OpenAI) -> ResearchState:
         response = self._call_claude(
             client=client,
             system=_SYSTEM,

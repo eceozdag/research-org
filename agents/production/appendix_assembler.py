@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import anthropic
+import openai
 
 from agents.base import BaseAgent
 from state.research_state import ResearchState
@@ -30,10 +30,10 @@ Return ONLY a valid JSON object:
 
 class AppendixAssembler(BaseAgent):
     name = "AppendixAssembler"
-    model = "claude-sonnet-4-6"
+    model = "gpt-4o-mini"
     use_thinking = False
 
-    def execute(self, state: ResearchState, client: anthropic.Anthropic) -> ResearchState:
+    def execute(self, state: ResearchState, client: openai.OpenAI) -> ResearchState:
         import json
         methodology_data = [
             {"topic_id": t.topic_id, "title": t.title, "experiments": t.experiments}

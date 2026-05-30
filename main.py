@@ -5,7 +5,7 @@ import sys
 import time
 from pathlib import Path
 
-import anthropic
+import openai
 from dotenv import load_dotenv
 from rich.console import Console
 from watchdog.events import FileSystemEventHandler
@@ -25,12 +25,12 @@ SUPPORTED_EXTENSIONS = {".md", ".txt"}
 
 
 def run_pipeline(memo_path: Path) -> None:
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
-        console.print("[bold red]ANTHROPIC_API_KEY not set. Add it to .env[/]")
+        console.print("[bold red]OPENAI_API_KEY not set. Add it to .env[/]")
         sys.exit(1)
 
-    client = anthropic.Anthropic(api_key=api_key)
+    client = openai.OpenAI(api_key=api_key)
     memo_text = memo_path.read_text(encoding="utf-8")
 
     state = ResearchState(memo_text=memo_text, memo_path=str(memo_path))
@@ -65,8 +65,8 @@ def resume_pipeline(run_id: str) -> None:
         console.print(f"[red]No state found for run {run_id}[/]")
         sys.exit(1)
 
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    client = anthropic.Anthropic(api_key=api_key)
+    api_key = os.environ.get("OPENAI_API_KEY")
+    client = openai.OpenAI(api_key=api_key)
 
     state = ResearchState.load(state_path)
     console.rule(f"[bold yellow]Resuming Run {run_id}[/]")

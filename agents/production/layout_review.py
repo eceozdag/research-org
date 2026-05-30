@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import anthropic
+import openai
 
 from agents.base import BaseAgent
 from state.research_state import ResearchState
@@ -34,10 +34,10 @@ Return ONLY a valid JSON object:
 
 class LayoutReview(BaseAgent):
     name = "LayoutReview"
-    model = "claude-sonnet-4-6"
+    model = "gpt-4o-mini"
     use_thinking = False
 
-    def execute(self, state: ResearchState, client: anthropic.Anthropic) -> ResearchState:
+    def execute(self, state: ResearchState, client: openai.OpenAI) -> ResearchState:
         latex_block = next(
             (a for a in state.appendix if a.get("type") == "latex_source"), {}
         )

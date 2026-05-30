@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import anthropic
+import openai
 
 from agents.base import BaseAgent
 from state.research_state import ResearchState
@@ -28,10 +28,10 @@ Return ONLY a valid JSON object:
 
 class WritingReview(BaseAgent):
     name = "WritingReview"
-    model = "claude-opus-4-7"
+    model = "gpt-4o"
     use_thinking = True
 
-    def execute(self, state: ResearchState, client: anthropic.Anthropic) -> ResearchState:
+    def execute(self, state: ResearchState, client: openai.OpenAI) -> ResearchState:
         draft = "\n\n---\n\n".join(
             f"## {s.title}\n{s.content}" for s in state.sections if s.content
         )

@@ -4,41 +4,35 @@ import json
 import re
 from abc import ABC, abstractmethod
 
-import anthropic
+import openai
 
 from state.research_state import ResearchState
 
 
 class BaseAgent(ABC):
-    model: str = "claude-opus-4-7"
-    use_thinking: bool = True
+    model: str = "gpt-4o"
+    use_thinking: bool = True  # kept for compatibility; ignored by OpenAI backend
     name: str = "BaseAgent"
 
     def _call_claude(
         self,
-        client: anthropic.Anthropic,
+        client: openai.OpenAI,
         system: str,
         messages: list[dict],
         max_tokens: int = 8096,
         tools: list[dict] | None = None,
     ) -> str:
+        """Calls the OpenAI Chat Completions API. Named _call_claude for drop-in compatibility."""
         kwargs: dict = {
             "model": self.model,
             "max_tokens": max_tokens,
-            "system": system,
-            "messages": messages,
+            "messages": [{"role": "system", "content": system}, *messages],
         }
-        if self.use_thinking:
-            kwargs["thinking"] = {"type": "adaptive"}
         if tools:
-            kwargs["tools"] = tools
+            kwargs["tools"] = [{"type": "function", "function": t} for t in tools]
 
-        response = client.messages.create(**kwargs)
-
-        for block in response.content:
-            if hasattr(block, "type") and block.type == "text":
-                return block.text
-        return ""
+        response = client.chat.completions.create(**kwargs)
+        return response.choices[0].message.content or ""
 
     def _parse_json(self, text: str) -> dict:
         match = re.search(r"```json\n(.*?)```", text, re.DOTALL)
@@ -60,5 +54,5 @@ class BaseAgent(ABC):
         return {}
 
     @abstractmethod
-    def execute(self, state: ResearchState, client: anthropic.Anthropic) -> ResearchState:
+    def execute(self, state: ResearchState, client: openai.OpenAI) -> ResearchState:
         pass

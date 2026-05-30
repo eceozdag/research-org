@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import anthropic
+import openai
 
 from agents.base import BaseAgent
 from state.research_state import ResearchState
@@ -34,10 +34,10 @@ Return ONLY a valid JSON object:
 
 class LaTeXFormatter(BaseAgent):
     name = "LaTeXFormatter"
-    model = "claude-opus-4-7"
+    model = "gpt-4o"
     use_thinking = False
 
-    def execute(self, state: ResearchState, client: anthropic.Anthropic) -> ResearchState:
+    def execute(self, state: ResearchState, client: openai.OpenAI) -> ResearchState:
         paper_content = {
             "title": state.refined_outline.get("title", "Untitled"),
             "abstract": state.benchmark_report.get("abstract", ""),

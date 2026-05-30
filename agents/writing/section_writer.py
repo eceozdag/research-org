@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-import anthropic
+import openai
 
 from agents.base import BaseAgent
 from state.research_state import Claim, ResearchState, Section
@@ -37,13 +37,13 @@ Return ONLY a valid JSON object:
 
 class SectionWriter(BaseAgent):
     name = "SectionWriter"
-    model = "claude-sonnet-4-6"
+    model = "gpt-4o-mini"
     use_thinking = False
 
     def __init__(self, section_id: str):
         self.section_id = section_id
 
-    def execute(self, state: ResearchState, client: anthropic.Anthropic) -> ResearchState:
+    def execute(self, state: ResearchState, client: openai.OpenAI) -> ResearchState:
         section_spec = next(
             (s for s in state.section_map.get("sections", []) if s["section_id"] == self.section_id),
             None,

@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
 
-import anthropic
+import openai
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -58,9 +58,9 @@ class Director:
     """Orchestrates the full 7-phase research pipeline."""
 
     name = "Director"
-    model = "claude-opus-4-7"
+    model = "gpt-4o"
 
-    def run(self, state: ResearchState, client: anthropic.Anthropic, state_path: Path) -> ResearchState:
+    def run(self, state: ResearchState, client: openai.OpenAI, state_path: Path) -> ResearchState:
         phases = [
             (0, self._run_phase_0),
             (1, self._run_phase_1),
@@ -87,7 +87,7 @@ class Director:
     # Phase 0: Proposal Review
     # ──────────────────────────────────────────────────────────────────
 
-    def _run_phase_0(self, state: ResearchState, client: anthropic.Anthropic) -> ResearchState:
+    def _run_phase_0(self, state: ResearchState, client: openai.OpenAI) -> ResearchState:
         state.phase_status.phase_0 = "active"
 
         console.print("[cyan]Running Proposal Reviewer…[/]")
@@ -113,7 +113,7 @@ class Director:
     # Phase 1: Research Lab
     # ──────────────────────────────────────────────────────────────────
 
-    def _run_phase_1(self, state: ResearchState, client: anthropic.Anthropic) -> ResearchState:
+    def _run_phase_1(self, state: ResearchState, client: openai.OpenAI) -> ResearchState:
         state.phase_status.phase_1 = "active"
 
         topics = self._decompose_into_topics(state, client)
@@ -172,7 +172,7 @@ class Director:
     # Phase 2: Benchmark Audit
     # ──────────────────────────────────────────────────────────────────
 
-    def _run_phase_2(self, state: ResearchState, client: anthropic.Anthropic) -> ResearchState:
+    def _run_phase_2(self, state: ResearchState, client: openai.OpenAI) -> ResearchState:
         state.phase_status.phase_2 = "active"
 
         console.print("[cyan]Running Fact-Check Audit…[/]")
@@ -200,7 +200,7 @@ class Director:
     # Phase 3: Structure
     # ──────────────────────────────────────────────────────────────────
 
-    def _run_phase_3(self, state: ResearchState, client: anthropic.Anthropic) -> ResearchState:
+    def _run_phase_3(self, state: ResearchState, client: openai.OpenAI) -> ResearchState:
         state.phase_status.phase_3 = "active"
         console.print("[cyan]Running Structure & Editorial Agent…[/]")
         state = StructureEditorial().execute(state, client)
@@ -219,7 +219,7 @@ class Director:
     # Phase 4: Writing
     # ──────────────────────────────────────────────────────────────────
 
-    def _run_phase_4(self, state: ResearchState, client: anthropic.Anthropic) -> ResearchState:
+    def _run_phase_4(self, state: ResearchState, client: openai.OpenAI) -> ResearchState:
         state.phase_status.phase_4 = "active"
 
         sections_to_write = [s for s in state.sections if s.status in ("pending", "contaminated")]
@@ -256,7 +256,7 @@ class Director:
     # Phase 5: QA / Audit
     # ──────────────────────────────────────────────────────────────────
 
-    def _run_phase_5(self, state: ResearchState, client: anthropic.Anthropic) -> ResearchState:
+    def _run_phase_5(self, state: ResearchState, client: openai.OpenAI) -> ResearchState:
         state.phase_status.phase_5 = "active"
         state.audit_findings.clear()
 
@@ -292,7 +292,7 @@ class Director:
     # Phase 6: Production
     # ──────────────────────────────────────────────────────────────────
 
-    def _run_phase_6(self, state: ResearchState, client: anthropic.Anthropic) -> ResearchState:
+    def _run_phase_6(self, state: ResearchState, client: openai.OpenAI) -> ResearchState:
         state.phase_status.phase_6 = "active"
 
         console.print("[cyan]Production running in parallel: Graphs / Formatter / Appendix…[/]")
@@ -334,22 +334,19 @@ class Director:
     # Helpers
     # ──────────────────────────────────────────────────────────────────
 
-    def _decompose_into_topics(self, state: ResearchState, client: anthropic.Anthropic) -> list[dict]:
-        kwargs: dict = {
-            "model": self.model,
-            "max_tokens": 4096,
-            "thinking": {"type": "adaptive"},
-            "system": _TOPIC_DECOMPOSE_SYSTEM,
-            "messages": [{
-                "role": "user",
-                "content": (
+    def _decompose_into_topics(self, state: ResearchState, client: openai.OpenAI) -> list[dict]:
+        response = client.chat.completions.create(
+            model=self.model,
+            max_tokens=4096,
+            messages=[
+                {"role": "system", "content": _TOPIC_DECOMPOSE_SYSTEM},
+                {"role": "user", "content": (
                     f"Refined outline:\n{json.dumps(state.refined_outline, indent=2)}\n\n"
                     f"Scout recommended depth areas: {state.scout_report.get('recommended_depth_areas', [])}"
-                ),
-            }],
-        }
-        response = client.messages.create(**kwargs)
-        text = next((b.text for b in response.content if hasattr(b, "type") and b.type == "text"), "[]")
+                )},
+            ],
+        )
+        text = response.choices[0].message.content or "[]"
         import re
         match = re.search(r"\[.*\]", text, re.DOTALL)
         if match:

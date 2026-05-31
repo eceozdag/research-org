@@ -9,6 +9,13 @@ from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
 
+class RawInput(BaseModel):
+    file_name: str
+    file_type: str  # xlsx, pdf, docx, md, txt, csv, image
+    content: str    # extracted text / description
+    metadata: dict = Field(default_factory=dict)
+
+
 class SourceEntry(BaseModel):
     source_id: str
     url: str
@@ -72,6 +79,7 @@ class DreamScores(BaseModel):
 
 
 class PhaseStatus(BaseModel):
+    ingestion: Literal["pending", "active", "complete", "failed"] = "pending"
     phase_0: Literal["pending", "active", "complete", "failed"] = "pending"
     phase_1: Literal["pending", "active", "complete", "failed"] = "pending"
     phase_2: Literal["pending", "active", "complete", "failed"] = "pending"
@@ -83,9 +91,15 @@ class PhaseStatus(BaseModel):
 
 class ResearchState(BaseModel):
     run_id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
-    memo_text: str = ""
+    input_folder: str = ""           # path to folder of raw materials
+    memo_text: str = ""              # final memo (synthesized or user-provided)
     memo_path: str = ""
     created_at: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+
+    # Ingestion phase
+    raw_inputs: list[RawInput] = Field(default_factory=list)
+    synthesized_memo: str = ""
+    preliminary_outline: dict = Field(default_factory=dict)
 
     # Phase 0
     proposal_review: dict = Field(default_factory=dict)

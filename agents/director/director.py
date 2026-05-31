@@ -11,6 +11,8 @@ from rich.panel import Panel
 from rich.table import Table
 
 from agents.base import BaseAgent
+from agents.ingestion.input_receiver import InputReceiverAgent
+from agents.ingestion.preliminary_outline import PreliminaryOutlineAgent
 from agents.proposal.alignment import AlignmentAgent
 from agents.proposal.proposal_reviewer import ProposalReviewer
 from agents.proposal.scout import ScoutAgent
@@ -62,6 +64,7 @@ class Director:
 
     def run(self, state: ResearchState, client: openai.OpenAI, state_path: Path) -> ResearchState:
         phases = [
+            ("ingestion", self._run_ingestion),
             (0, self._run_phase_0),
             (1, self._run_phase_1),
             (2, self._run_phase_2),
@@ -71,7 +74,7 @@ class Director:
             (6, self._run_phase_6),
         ]
         for phase_num, runner in phases:
-            key = f"phase_{phase_num}"
+            key = f"phase_{phase_num}" if isinstance(phase_num, int) else phase_num
             if getattr(state.phase_status, key) == "complete":
                 console.print(f"[dim]Phase {phase_num} already complete — skipping[/]")
                 continue
@@ -81,6 +84,40 @@ class Director:
             if getattr(state.phase_status, key) != "complete":
                 console.print(f"[bold red]Phase {phase_num} did not complete. Pipeline halted.[/]")
                 break
+        return state
+
+    # ──────────────────────────────────────────────────────────────────
+    # Ingestion Phase
+    # ──────────────────────────────────────────────────────────────────
+
+    def _run_ingestion(self, state: ResearchState, client: openai.OpenAI) -> ResearchState:
+        state.phase_status.ingestion = "active"
+
+        # Skip if no input folder — user provided a memo directly
+        if not state.input_folder:
+            console.print("[dim]Ingestion: no input folder set — using memo_text directly.[/]")
+            state.phase_status.ingestion = "complete"
+            return state
+
+        console.print("[cyan]Running Input Receiver Agent…[/]")
+        state = InputReceiverAgent().execute(state, client)
+
+        if not state.raw_inputs:
+            console.print("[red]Ingestion: no files parsed. Check input folder.[/]")
+            state.phase_status.ingestion = "failed"
+            return state
+
+        console.print(f"[cyan]Running Preliminary Outline Agent ({len(state.raw_inputs)} inputs)…[/]")
+        state = PreliminaryOutlineAgent().execute(state, client)
+
+        console.print(
+            f"[green]Ingestion complete: {len(state.raw_inputs)} file(s) → memo synthesized "
+            f"({len(state.synthesized_memo)} chars)[/]"
+        )
+        if state.preliminary_outline.get("title"):
+            console.print(f"  Preliminary title: [italic]{state.preliminary_outline['title']}[/]")
+
+        state.phase_status.ingestion = "complete"
         return state
 
     # ──────────────────────────────────────────────────────────────────

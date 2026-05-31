@@ -59,6 +59,12 @@ class AlignmentAgent(BaseAgent):
                     f"Research memo:\n\n{state.memo_text}\n\n"
                     f"Proposal review:\n{json.dumps(state.proposal_review, indent=2)}\n\n"
                     f"Scout landscape scan:\n{json.dumps(state.scout_report, indent=2)}"
+                    + (
+                        f"\n\nPreliminary outline drafted from user's raw inputs "
+                        f"(use as structural starting point — validate and refine):\n"
+                        f"{json.dumps(state.preliminary_outline, indent=2)}"
+                        if state.preliminary_outline else ""
+                    )
                 ),
             }],
             max_tokens=8096,

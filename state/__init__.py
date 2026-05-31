@@ -1,3 +1,3 @@
-from .research_state import ResearchState
+from .research_state import ResearchState, RawInput
 
-__all__ = ["ResearchState"]
+__all__ = ["ResearchState", "RawInput"]

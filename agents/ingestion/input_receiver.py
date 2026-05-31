@@ -61,9 +61,9 @@ class InputReceiverAgent(BaseAgent):
             console.print(f"[red]Input folder not found: {input_folder}[/]")
             return state
 
-        # Discover and parse all supported files
+        # Discover and parse all supported files (recursive through subfolders)
         files = sorted([
-            f for f in input_folder.iterdir()
+            f for f in input_folder.rglob("*")
             if f.is_file() and f.suffix.lower() in SUPPORTED
         ])
 
